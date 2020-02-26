@@ -1,6 +1,9 @@
 try{const app = require('express')();
 const fs = require('fs');
 const os = require('os');
+
+const aliases = fs.readFileSync('alias', 'UTF8').split('\n').map(a => a.split(' '));
+console.log("Loaded " + aliases.length + " aliases")
 	
 const readDir = (path) => {
 	const readdir = fs.readdirSync(path);	
@@ -13,6 +16,18 @@ const readDir = (path) => {
 
 app.set('view engine', 'ejs');
 
+app.use((req, res, next) => {
+	
+	let found = false
+ aliases.forEach(alias => {
+ 	if((req.url) === '/'+alias[0]) {
+		res.redirect('/?path='+alias[1])
+		found = true
+	}
+ })
+	if(!found) return next()
+	
+})
 
 app.get('/', (req, res) => {
 	let { path } = req.query;
