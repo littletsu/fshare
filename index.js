@@ -1,7 +1,7 @@
 try{const app = require('express')();
 const fs = require('fs');
 const os = require('os');
-
+const root = "/data/data/com.termux/files/home";
 const aliases = fs.readFileSync('alias', 'UTF8').split('\n').map(a => a.split(' '));
 console.log("Loaded " + aliases.length + " aliases")
 	
@@ -20,6 +20,7 @@ app.use((req, res, next) => {
 	
 	let found = false
  aliases.forEach(alias => {
+	if(alias.length !== 2) return
  	if((req.url) === '/'+alias[0]) {
 		res.redirect('/?path='+alias[1])
 		found = true
@@ -33,12 +34,13 @@ app.get('/', (req, res) => {
 	let { path } = req.query;
 	if(!path) {
 		res.render('dir.ejs', {
-			files: readDir('/storage'), 
-			path: '/storage'
+			files: readDir(root), 
+			path: root
 		});
 	} else {
+		if(!path.startsWith(root)) path = root + path
 		if(fs.lstatSync(path).isDirectory()) {
-			if(path === "/storage/emulated") path = path + '/0'
+			
 			res.render('dir.ejs', {
 				files: readDir(path),
 				path
