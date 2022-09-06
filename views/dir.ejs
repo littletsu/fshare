@@ -3,7 +3,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<body>                                                                <% files.forEach((f) => { %>     
-		<a href="/?path=<%= f.path + '/' + f.name  %>">
+		<a href="<%= join(f.path, f.name)  %>">
 		<%= `${f.type === true ? 'File' : 'Folder'} - ${f.name}` %> <br>
 		</a>
 		<% }) %>
