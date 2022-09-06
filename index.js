@@ -54,9 +54,9 @@ try {
 	})
 
 	app.listen(port, () => {
-		let ip = os.networkInterfaces().wlan0[0];
+		let ip = os.networkInterfaces().wlan0;
 		if(!ip) ip = "localhost";
-		else ip = ip.address;
+		else ip = ip[0].address;
 		console.log(`Server started at ${ip}:${port}`);
 	});
 
