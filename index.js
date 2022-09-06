@@ -5,7 +5,7 @@ try {
 	const { join, basename } = require('path');
 	const mime = require('mime');
 
-	const root = "/";
+	const root = process.argv[2] || process.env.FSHARE_ROOT || process.env.HOME || "/";
 	const port = 3000;
 
 	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
