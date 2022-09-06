@@ -34,28 +34,27 @@ try {
 		if (found) return;
 		let path = decodeURI(req.url);
 		if ((path === "/") && (path !== root)) return res.redirect(root);
+		let lstat = fs.lstatSync(path);
+		
+		if (!lstat.isFile()) return res.render('dir.ejs', {
+			files: readDir(path),
+			path, join
+		});
 
-		if (fs.lstatSync(path).isDirectory()) {
-			res.render('dir.ejs', {
-				files: readDir(path),
-				path, join
-			});
-		} else {
-			let data = fs.readFileSync(path);
-			let type = mime.getType(path);
-			if(!type || type === "text/plain") type = "text/plain;charset=utf-8";
-			res.writeHead(200, {
-				'Content-Type': type,
-				'Content-disposition': 'filename=' + basename(path),
-				'Content-Length': data.length
-			});
-			res.end(data, 'binary');
-		}
+		let data = fs.readFileSync(path);
+		let type = mime.getType(path);
+		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
+		res.writeHead(200, {
+			'Content-Type': type,
+			'Content-disposition': 'filename=' + basename(path),
+			'Content-Length': data.length
+		});
+		res.end(data, 'binary');
 	})
 
 	app.listen(port, () => {
 		let ip = os.networkInterfaces().wlan0;
-		if(!ip) ip = "localhost";
+		if (!ip) ip = "localhost";
 		else ip = ip[0].address;
 		console.log(`Server started at ${ip}:${port}`);
 	});
