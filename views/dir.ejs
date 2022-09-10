@@ -4,7 +4,7 @@
 	</head>
 	<body>                                                                <% files.forEach((f) => { %>     
 		<a href="<%= join(f.path, f.name)  %>">
-		<%= `${f.type === true ? 'File' : 'Folder'} - ${f.name}` %> <br>
+		<%= `${f.type ? 'File' : 'Folder'} - ${f.name}` %> <br>
 		</a>
 		<% }) %>
 	</body>
