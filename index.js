@@ -2,7 +2,7 @@ try {
 	const app = require('express')();
 	const fs = require('fs');
 	const os = require('os');
-	const { join, basename } = require('path');
+	const { join, basename, resolve } = require('path');
 	const mime = require('mime');
 
 	const root = process.argv[2] || process.env.FSHARE_ROOT || process.env.HOME || "/";
@@ -27,7 +27,7 @@ try {
 		aliases.forEach(alias => {
 			if (alias.length !== 2) return
 			if ((req.url) === '/' + alias[0]) {
-				res.redirect(alias[1])
+				res.redirect(resolve(alias[1]))
 				found = true
 			}
 		})
