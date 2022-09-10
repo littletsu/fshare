@@ -53,10 +53,10 @@ try {
 	})
 
 	app.listen(port, () => {
-		let ip = os.networkInterfaces().wlan0;
-		if (!ip) ip = "localhost";
-		else ip = ip[0].address;
-		console.log(`Server started at ${ip}:${port}`);
+		let interfaces = os.networkInterfaces();
+		let serverIps = Object.entries(interfaces)
+						.map(([name, ips]) => `\t${name}: ${ips.map(ip => `${ip.address}:${port}`).join(' | ')}`).join('\n');
+		console.log(`Server started at:\n${serverIps}`);
 	});
 
 } catch (err) { console.log(err) } // for some reason termux wont let me see errors from node so i have to use this
