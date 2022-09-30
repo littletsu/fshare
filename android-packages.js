@@ -1,4 +1,4 @@
-module.exports = (port) => {
+module.exports = (port, sendFile) => {
     const express = require('express');
     const { exec } = require('child_process');
     const app = express();
@@ -12,6 +12,14 @@ module.exports = (port) => {
             res.render('android-packages.ejs', {
                 packages
             });
+        })
+    })
+
+    app.get('/package/:name', (req, res) => {
+        exec("cmd package path " + req.query.name, (err, stdout) => {
+            if(err) return res.send(err);
+            const files = stdout.split('\n').map(line => line.split('package:')[1]);
+            sendFile(res, files[0]);
         })
     })
 

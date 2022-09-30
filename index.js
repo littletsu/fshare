@@ -21,6 +21,18 @@ try {
 		});
 	}
 
+	const sendFile = (path, res) => {
+		let data = fs.readFileSync(path);
+		let type = mime.getType(path);
+		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
+		res.writeHead(200, {
+			'Content-Type': type,
+			'Content-disposition': 'filename=' + basename(path),
+			'Content-Length': data.length
+		});
+		res.end(data, 'binary');
+	}
+
 	app.set('view engine', 'ejs');
 
 	app.use((req, res) => {
@@ -42,20 +54,12 @@ try {
 			path, join
 		});
 
-		let data = fs.readFileSync(path);
-		let type = mime.getType(path);
-		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
-		res.writeHead(200, {
-			'Content-Type': type,
-			'Content-disposition': 'filename=' + basename(path),
-			'Content-Length': data.length
-		});
-		res.end(data, 'binary');
+		sendFile(path, res);
 	})
 
 	if(process.env.HOME.includes("com.termux") || process.argv[3]) {
 		packages_port = process.argv[4] || port + 1;
-		require('./android-packages.js')(packages_port);
+		require('./android-packages.js')(packages_port, sendFile);
 	}
 
 	app.listen(port, () => {
