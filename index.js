@@ -7,6 +7,7 @@ try {
 
 	const root = process.argv[2] || process.env.FSHARE_ROOT || process.env.HOME || "/";
 	const port = 3000;
+	let packages_port;
 
 	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
 	console.log("Loaded " + aliases.length + " aliases")
@@ -52,11 +53,18 @@ try {
 		res.end(data, 'binary');
 	})
 
+	if(process.env.HOME.includes("com.termux") || process.env.argv[3]) {
+		packages_port = process.env.argv[4] || port + 1;
+		require('./android-packages.js')(packages_port);
+	}
+
 	app.listen(port, () => {
 		let interfaces = os.networkInterfaces();
 		let serverIps = Object.entries(interfaces)
-						.map(([name, ips]) => `\t${name}: ${ips.map(ip => `${ip.address}:${port}`).join(' | ')}`).join('\n');
+						.map(([name, ips]) => `\t${name}: ${ips.map(ip => `${ip.address}:${port}${packages_port ? `/${packages_port}` : ''}`).join(' | ')}`).join('\n');
 		console.log(`Server started at:\n${serverIps}`);
 	});
+
+	
 
 } catch (err) { console.log(err) } // for some reason termux wont let me see errors from node so i have to use this
