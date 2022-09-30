@@ -16,7 +16,7 @@ module.exports = (port, sendFile) => {
     })
 
     app.get('/package/:name', (req, res) => {
-        exec("cmd package path " + req.query.name, (err, stdout) => {
+        exec("cmd package path " + req.params.name, (err, stdout) => {
             if(err) return res.send(err);
             const files = stdout.split('\n').map(line => line.split('package:')[1]);
             sendFile(res, files[0]);
