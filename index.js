@@ -23,7 +23,7 @@ try {
 		});
 	} else {
 		ynPrompt = (question) => new Promise((res, rej) => {
-			require('child_process').exec(`termux-dialog confirm -t "${question}"`, (err, stdout) => {
+			require('child_process').exec(`termux-dialog confirm -t "${question.split(" ")[0].replace(/"/, "")}"`, (err, stdout) => {
 				if(err) return rej(err);
 				res(JSON.parse(stdout).text === "yes");
 			})
