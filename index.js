@@ -53,8 +53,8 @@ try {
 		res.end(data, 'binary');
 	})
 
-	if(process.env.HOME.includes("com.termux") || process.env.argv[3]) {
-		packages_port = process.env.argv[4] || port + 1;
+	if(process.env.HOME.includes("com.termux") || process.argv[3]) {
+		packages_port = process.argv[4] || port + 1;
 		require('./android-packages.js')(packages_port);
 	}
 
