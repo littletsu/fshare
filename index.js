@@ -6,8 +6,29 @@ try {
 	const mime = require('mime');
 
 	const root = process.argv[2] || process.env.FSHARE_ROOT || process.env.HOME || "/";
+	const is_termux = process.env.HOME.includes("com.termux");
+	const can_termux_prompt = is_termux && (process.argv[6] !== "sh");
 	const port = 3000;
+
 	let packages_port;
+	let ynPrompt;
+
+	if(!can_termux_prompt) {
+		let rl = require('readline').createInterface({
+			input: process.stdin,
+			output: process.stdout
+		});
+		ynPrompt = (question) => new Promise((res, rej) => {
+			rl.question(question + " (y/N): ", answer => res(answer.toLowerCase() === "y"))
+		});
+	} else {
+		ynPrompt = (question) => new Promise((res, rej) => {
+			require('child_process').exec(`termux-dialog confirm -t "${question}"`, (err, stdout) => {
+				if(err) return rej(err);
+				res(JSON.parse(stdout).text === "yes");
+			})
+		});
+	}
 
 	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
 	console.log("Loaded " + aliases.length + " aliases")
@@ -21,7 +42,8 @@ try {
 		});
 	}
 
-	const sendFile = (path, res, filename) => {
+	const sendFile = async (path, res, filename) => {
+		if(process.argv[5] === "pr" && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401);
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
@@ -57,7 +79,7 @@ try {
 		sendFile(path, res);
 	})
 
-	if(process.env.HOME.includes("com.termux") || process.argv[3]) {
+	if((is_termux && (typeof process.argv[3] === "undefined")) || (process.argv[3] === "ap")) {
 		packages_port = process.argv[4] || port + 1;
 		require('./android-packages.js')(packages_port, sendFile);
 	}
