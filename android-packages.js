@@ -20,7 +20,7 @@ module.exports = (port, sendFile) => {
         exec("cmd package path " + packageName, (err, stdout) => {
             if(err) return res.send(err);
             const files = stdout.split('\n').map(line => line.split('package:')[1]);
-            sendFile(files[0], res);
+            sendFile(files[0], res, req.params.name);
         })
     })
 

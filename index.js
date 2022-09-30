@@ -21,13 +21,13 @@ try {
 		});
 	}
 
-	const sendFile = (path, res) => {
+	const sendFile = (path, res, filename) => {
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
 		res.writeHead(200, {
 			'Content-Type': type,
-			'Content-disposition': 'filename=' + basename(path),
+			'Content-disposition': 'filename=' + filename || basename(path),
 			'Content-Length': data.length
 		});
 		res.end(data, 'binary');
