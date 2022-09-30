@@ -43,7 +43,7 @@ try {
 	}
 
 	const sendFile = async (path, res, filename) => {
-		if(process.argv[5] === "pr" && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401);
+		if(process.argv[5] === "pr" && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
