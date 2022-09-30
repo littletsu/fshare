@@ -61,7 +61,7 @@ try {
 	app.listen(port, () => {
 		let interfaces = os.networkInterfaces();
 		let serverIps = Object.entries(interfaces)
-						.map(([name, ips]) => `\t${name}: ${ips.map(ip => `${ip.address}:${port}${packages_port ? ` / ${ip.address}:${packages_port}` : ''}`).join(' | ')}`).join('\n');
+						.map(([name, ips]) => `\t${name}:\n\t  ${ips.map(ip => `${ip.address}:${port}${packages_port ? ` / ${ip.address}:${packages_port}` : ''}`).join('\n\t  ')}`).join('\n');
 		console.log(`Server started at:\n${serverIps}`);
 	});
 
