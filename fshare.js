@@ -23,7 +23,7 @@ try {
 
 	const config = {
 		root: argvalue("-root", "[path]", "Path to redirect to on /"),
-		enable_android_packages: argvalue("-ap", null, "Enables an alternate server that allows downloading of android apps on the system"),
+		enable_android_packages: argvalue("-ap", "(ap|no)", 'Enables an alternate server that allows downloading of android apps on the system. Can be "no" to disable the server.'),
 		packages_port: argvalue("-ap-port", "[port]", "Port for android apps server"),
 		prompt: argvalue("-pr", "(type)", 'Enables a prompt for permission every time a file is accesed. Can be "sh" to send prompts on the shell, or anything else to send prompts as a termux dialog if possible.'),
 		help: argvalue("-help", null, "Show list of commands, their description and their arguments")
