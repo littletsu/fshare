@@ -3,7 +3,8 @@ try {
 	const app = require('express')();
 	const fs = require('fs');
 	const os = require('os');
-	const { join, basename, resolve } = require('path');
+	const native_path = require('path');
+	const { join, basename, resolve } = native_path.posix;
 	const mime = require('mime');
 
 	let argsObj = {};
@@ -35,7 +36,7 @@ try {
 		process.exit();
 	}
 
-	const root = config.root || process.env.FSHARE_ROOT || process.env.HOME || process.env.USERPROFILE || "/";
+	const root = config.root || process.env.FSHARE_ROOT || process.env.HOME || process.env.HOMEPATH.slice(1) || "/";
 	const is_termux = process.env.HOME && process.env.HOME.includes("com.termux");
 	const can_termux_prompt = is_termux && (config.prompt !== "sh");
 	const port = 3000;
@@ -59,9 +60,24 @@ try {
 			})
 		});
 	}
+	const aliases = {};
+	const access = {};
+	let aliasesNum = 0;
+	fs.readFileSync('files', 'UTF8')
+		.split('\n')
+		.filter(line => (line.trim() !== "") && (!line.startsWith("#")))
+		.forEach(line => {
+			let values = line.trim().split(',');
+			let fileAliases = values.slice(2);
+			let path = native_path.normalize(resolve(values[0]));
+			fileAliases.forEach(alias => {
+				aliases["/" + alias] = path.slice(1);
+				aliasesNum++;
+			});
+			access[path] = values[1] || "default";
+		});
 
-	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
-	console.log(`Loaded ${aliases.length} aliases.`);
+	console.log(`Loaded files modifications, ${aliasesNum} aliases.`);
 	
 	let args = Object.entries(config).filter(e => e[1]).map(e => `${e[0]}=${e[1]}`).join(' - ');
 	if(args.length !== 0) console.log(`Args: ${args}`);
@@ -76,7 +92,7 @@ try {
 	}
 
 	const sendFile = async (path, res, filename) => {
-		if (config.prompt && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
+		if (access[path] !== "always" && (config.prompt || (access[path] === "prompt")) && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
@@ -91,24 +107,14 @@ try {
 	app.set('view engine', 'ejs');
 
 	app.use((req, res) => {
-		let found = false
-		aliases.forEach(alias => {
-			if (alias.length !== 2) return
-			if ((req.url) === '/' + alias[0]) {
-				res.redirect(resolve(alias[1]))
-				found = true
-			}
-		})
-		if (found) return;
-		let path = decodeURI(req.url);
-		if ((path === "/") && (path !== root)) return res.redirect(root);
+		if(aliases[req.url]) return res.redirect(aliases[req.url]);
+		let path = decodeURI(native_path.normalize(req.url));
+		if ((path === native_path.sep) && (path !== root)) return res.redirect(root);
 		let lstat = fs.lstatSync(path);
-
 		if (!lstat.isFile()) return res.render('dir.ejs', {
 			files: readDir(path),
-			path, join
+			path, join: native_path.join
 		});
-
 		sendFile(path, res);
 	})
 

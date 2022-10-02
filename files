@@ -1,0 +1,8 @@
+# path,access=default,aliases
+# path is resolved, so it can be relative
+# aliases are separated by ,
+# access can be default (whatever the config is), prompt (always prompt no matter the config), always (always give access without prompt no matter the config)
+/data/app/com.mojang.minecraftpe-1/base.apk,,minecraft
+/data/app/com.cz.gdmt.AnnelidsDemo/base.apk,,annelids
+./favicon.ico,always,favicon.ico
+./fshare.js,prompt,fshare,fshr
