@@ -45,7 +45,7 @@ try {
 	let packages_port;
 	let ynPrompt;
 
-	if(config.prompt) {
+	if (config.prompt) {
 		if (!can_termux_prompt) {
 			let rl = require('readline').createInterface({
 				input: process.stdin,
@@ -81,9 +81,9 @@ try {
 		});
 
 	console.log(`Loaded files modifications, ${aliasesNum} aliases.`);
-	
+
 	let args = Object.entries(config).filter(e => e[1]).map(e => `${e[0]}=${e[1]}`).join(' - ');
-	if(args.length !== 0) console.log(`Args: ${args}`);
+	if (args.length !== 0) console.log(`Args: ${args}`);
 
 	const readDir = (path) => {
 		const readdir = fs.readdirSync(path);
@@ -110,7 +110,7 @@ try {
 	app.set('view engine', 'ejs');
 
 	app.use((req, res) => {
-		if(aliases[req.url]) return res.redirect(aliases[req.url]);
+		if (aliases[req.url]) return res.redirect(aliases[req.url]);
 		let path = decodeURI(native_path.normalize(req.url));
 		if ((path === native_path.sep) && (path !== root)) return res.redirect(root);
 		let lstat = fs.lstatSync(path);
