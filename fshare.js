@@ -25,6 +25,7 @@ try {
 		root: argvalue("-root", "[path]", "Path to redirect to on /"),
 		enable_android_packages: argvalue("-ap", "(ap|no)", 'Enables an alternate server that allows downloading of android apps on the system. Can be "no" to disable the server.'),
 		packages_port: argvalue("-ap-port", "[port]", "Port for android apps server"),
+		port: argvalue('-port', "[port]", "Port for fshare server"),
 		prompt: argvalue("-pr", "(type)", 'Enables a prompt for permission every time a file is accesed. Can be "sh" to send prompts on the shell, or anything else to send prompts as a termux dialog if possible.'),
 		help: argvalue("-help", null, "Show list of commands, their description and their arguments")
 	}
@@ -39,7 +40,7 @@ try {
 	const root = config.root || process.env.FSHARE_ROOT || process.env.HOME || process.env.HOMEPATH.slice(1) || "/";
 	const is_termux = process.env.HOME && process.env.HOME.includes("com.termux");
 	const can_termux_prompt = is_termux && (config.prompt !== "sh");
-	const port = 3000;
+	const port = parseInt(config.port) || 3000;
 
 	let packages_port;
 	let ynPrompt;
