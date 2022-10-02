@@ -45,21 +45,23 @@ try {
 	let packages_port;
 	let ynPrompt;
 
-	if (!can_termux_prompt) {
-		let rl = require('readline').createInterface({
-			input: process.stdin,
-			output: process.stdout
-		});
-		ynPrompt = (question) => new Promise((res, rej) => {
-			rl.question(question + " (y/N): ", answer => res(answer.toLowerCase() === "y"))
-		});
-	} else {
-		ynPrompt = (question) => new Promise((res, rej) => {
-			require('child_process').exec(`termux-dialog confirm -t "${question.replace(/"/, "")}"`, (err, stdout) => {
-				if (err) return rej(err);
-				res(JSON.parse(stdout).text === "yes");
-			})
-		});
+	if(config.prompt) {
+		if (!can_termux_prompt) {
+			let rl = require('readline').createInterface({
+				input: process.stdin,
+				output: process.stdout
+			});
+			ynPrompt = (question) => new Promise((res, rej) => {
+				rl.question(question + " (y/N): ", answer => res(answer.toLowerCase() === "y"))
+			});
+		} else {
+			ynPrompt = (question) => new Promise((res, rej) => {
+				require('child_process').exec(`termux-dialog confirm -t "${question.replace(/"/, "")}"`, (err, stdout) => {
+					if (err) return rej(err);
+					res(JSON.parse(stdout).text === "yes");
+				})
+			});
+		}
 	}
 	const aliases = {};
 	const access = {};
