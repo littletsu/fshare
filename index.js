@@ -5,9 +5,38 @@ try {
 	const { join, basename, resolve } = require('path');
 	const mime = require('mime');
 
-	const root = process.argv[2] || process.env.FSHARE_ROOT || process.env.HOME || "/";
-	const is_termux = process.env.HOME.includes("com.termux");
-	const can_termux_prompt = is_termux && (process.argv[6] !== "sh");
+	let argsObj = {};
+	let commands = [];
+    process.argv.forEach((arg, i) => {
+        let argument = arg.toLowerCase();
+        if(argument.startsWith('-')) {
+			argsObj[argument] = process.argv[i+1] ? process.argv[i+1].startsWith('-') ? true : process.argv[i+1] : true
+        }
+    });
+
+	const argvalue = (name, args, desc) => {
+		commands.push({name, args, desc});
+		return argsObj[name] || argsObj["-" + name];
+	}
+
+	const config = {
+		root: argvalue("-root", "[path]", "Path to redirect to on /"),
+		enable_android_packages: argvalue("-ap", null, "Enables an alternate server that allows downloading of android apps on the system"),
+		packages_port: argvalue("-ap-port", "[port]", "Port for android apps server"),
+		prompt: argvalue("-pr", "(type)", 'Enables a prompt for permission every time a file is accesed. Can be "sh" to send prompts on the shell, or anything else to send prompts as a termux dialog if possible.'),
+		help: argvalue("-help", null, "Show list of commands, their description and their arguments")
+	}
+
+	if(config.help) {
+		console.log(commands
+			.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+			.map(cmd => `${cmd.name}${cmd.args ? ` ${cmd.args}` : ""} - ${cmd.desc}`).join('\n'));
+		process.exit();
+	}
+
+	const root = config.root || process.env.FSHARE_ROOT || process.env.HOME || process.env.USERPROFILE || "/";
+	const is_termux = process.env.HOME && process.env.HOME.includes("com.termux");
+	const can_termux_prompt = is_termux && (config.prompt !== "sh");
 	const port = 3000;
 
 	let packages_port;
@@ -31,7 +60,7 @@ try {
 	}
 
 	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
-	console.log("Loaded " + aliases.length + " aliases")
+	console.log(`Loaded ${aliases.length} aliases.\nArgs: ${Object.entries(config).filter(e => e[1]).map(e => `${e[0]}=${e[1]}`).join(' - ')}`);
 
 	const readDir = (path) => {
 		const readdir = fs.readdirSync(path);
@@ -43,7 +72,7 @@ try {
 	}
 
 	const sendFile = async (path, res, filename) => {
-		if(process.argv[5] === "pr" && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
+		if(config.prompt && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
@@ -79,8 +108,8 @@ try {
 		sendFile(path, res);
 	})
 
-	if((is_termux && (typeof process.argv[3] === "undefined")) || (process.argv[3] === "ap")) {
-		packages_port = process.argv[4] || port + 1;
+	if((is_termux && (typeof config.enable_android_packages === "undefined")) || (config.enable_android_packages === "ap")) {
+		packages_port = config.packages_port || port + 1;
 		require('./android-packages.js')(packages_port, sendFile);
 	}
 
