@@ -60,7 +60,10 @@ try {
 	}
 
 	const aliases = fs.readFileSync('alias', 'UTF8').split('\n').filter(line => line.trim() !== "").map(a => a.split(' '));
-	console.log(`Loaded ${aliases.length} aliases.\nArgs: ${Object.entries(config).filter(e => e[1]).map(e => `${e[0]}=${e[1]}`).join(' - ')}`);
+	console.log(`Loaded ${aliases.length} aliases.`);
+	
+	let args = Object.entries(config).filter(e => e[1]).map(e => `${e[0]}=${e[1]}`).join(' - ');
+	if(args.length !== 0) console.log(`Args: ${args}`);
 
 	const readDir = (path) => {
 		const readdir = fs.readdirSync(path);
