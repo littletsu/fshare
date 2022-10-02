@@ -7,15 +7,15 @@ try {
 
 	let argsObj = {};
 	let commands = [];
-    process.argv.forEach((arg, i) => {
-        let argument = arg.toLowerCase();
-        if(argument.startsWith('-')) {
-			argsObj[argument] = process.argv[i+1] ? process.argv[i+1].startsWith('-') ? true : process.argv[i+1] : true
-        }
-    });
+	process.argv.forEach((arg, i) => {
+		let argument = arg.toLowerCase();
+		if (argument.startsWith('-')) {
+			argsObj[argument] = process.argv[i + 1] ? process.argv[i + 1].startsWith('-') ? true : process.argv[i + 1] : true
+		}
+	});
 
 	const argvalue = (name, args, desc) => {
-		commands.push({name, args, desc});
+		commands.push({ name, args, desc });
 		return argsObj[name] || argsObj["-" + name];
 	}
 
@@ -27,9 +27,9 @@ try {
 		help: argvalue("-help", null, "Show list of commands, their description and their arguments")
 	}
 
-	if(config.help) {
+	if (config.help) {
 		console.log(commands
-			.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+			.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
 			.map(cmd => `${cmd.name}${cmd.args ? ` ${cmd.args}` : ""} - ${cmd.desc}`).join('\n'));
 		process.exit();
 	}
@@ -42,7 +42,7 @@ try {
 	let packages_port;
 	let ynPrompt;
 
-	if(!can_termux_prompt) {
+	if (!can_termux_prompt) {
 		let rl = require('readline').createInterface({
 			input: process.stdin,
 			output: process.stdout
@@ -53,7 +53,7 @@ try {
 	} else {
 		ynPrompt = (question) => new Promise((res, rej) => {
 			require('child_process').exec(`termux-dialog confirm -t "${question.replace(/"/, "")}"`, (err, stdout) => {
-				if(err) return rej(err);
+				if (err) return rej(err);
 				res(JSON.parse(stdout).text === "yes");
 			})
 		});
@@ -72,7 +72,7 @@ try {
 	}
 
 	const sendFile = async (path, res, filename) => {
-		if(config.prompt && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
+		if (config.prompt && !(await ynPrompt(`Allow access to ${path}`))) return res.status(401).send('Forbidden');
 		let data = fs.readFileSync(path);
 		let type = mime.getType(path);
 		if (!type || type === "text/plain") type = "text/plain;charset=utf-8";
@@ -99,7 +99,7 @@ try {
 		let path = decodeURI(req.url);
 		if ((path === "/") && (path !== root)) return res.redirect(root);
 		let lstat = fs.lstatSync(path);
-		
+
 		if (!lstat.isFile()) return res.render('dir.ejs', {
 			files: readDir(path),
 			path, join
@@ -108,7 +108,7 @@ try {
 		sendFile(path, res);
 	})
 
-	if((is_termux && (typeof config.enable_android_packages === "undefined")) || (config.enable_android_packages === "ap")) {
+	if ((is_termux && (typeof config.enable_android_packages === "undefined")) || (config.enable_android_packages === "ap")) {
 		packages_port = config.packages_port || port + 1;
 		require('./android-packages.js')(packages_port, sendFile);
 	}
@@ -116,10 +116,10 @@ try {
 	app.listen(port, () => {
 		let interfaces = os.networkInterfaces();
 		let serverIps = Object.entries(interfaces)
-						.map(([name, ips]) => `\t${name}:\n\t  ${ips.map(ip => `${ip.address}:${port}${packages_port ? ` / ${ip.address}:${packages_port}` : ''}`).join('\n\t  ')}`).join('\n');
+			.map(([name, ips]) => `\t${name}:\n\t  ${ips.map(ip => `${ip.address}:${port}${packages_port ? ` / ${ip.address}:${packages_port}` : ''}`).join('\n\t  ')}`).join('\n');
 		console.log(`Server started at:\n${serverIps}`);
 	});
 
-	
+
 
 } catch (err) { console.log(err) } // for some reason termux wont let me see errors from node so i have to use this
